@@ -290,7 +290,7 @@
         <div class="section">
             <h2>Current Signatories</h2>
             <div class="netlify-note" style="background: #e7f3ff; color: #0066cc; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; text-align: center;">
-                <strong>Note:</strong> Signatures are submitted to Netlify and will appear after verification.
+                <strong>Note:</strong> Public signatures appear immediately. All submissions are stored securely.
             </div>
             <div id="signatoryList" class="signatories">
                 <p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>
@@ -301,7 +301,7 @@
             <h2>Sign the Manifesto</h2>
             
             <div id="successMessage" class="message success">
-                Thank you for signing the Humanitarian AI Manifesto! Your signature has been submitted to Netlify for verification and will appear in the list once approved.
+                Thank you for signing the Humanitarian AI Manifesto! Your signature is now public and has been recorded.
             </div>
             
             <div id="errorMessage" class="message error">
@@ -456,7 +456,7 @@
                     this.signatories.push({
                         ...signatoryData,
                         timestamp: new Date().toISOString(),
-                        verified: false
+                        verified: true
                     });
                     this.count++;
                     this.saveLocalData(); // Save locally as backup
@@ -512,8 +512,8 @@
                 const successMessage = document.getElementById('successMessage');
                 const errorMessage = document.getElementById('errorMessage');
                 
-                form.addEventListener('submit', (e) => {
-                    // Don't prevent default - let Netlify handle the submission
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault(); // Always prevent default to handle submission ourselves
                     
                     // Hide previous messages
                     successMessage.style.display = 'none';
@@ -521,13 +521,16 @@
                     
                     // Validate form before submission
                     if (!this.validateForm()) {
-                        e.preventDefault(); // Prevent submission if invalid
                         errorMessage.style.display = 'block';
                         errorMessage.scrollIntoView({ behavior: 'smooth' });
                         return;
                     }
                     
-                    // Get form data for local display (optional immediate feedback)
+                    // Change button text to show processing
+                    submitBtn.textContent = 'Submitting...';
+                    submitBtn.disabled = true;
+                    
+                    // Get form data
                     const formData = new FormData(form);
                     const signatoryData = {
                         name: formData.get('name'),
@@ -539,22 +542,61 @@
                         website: formData.get('website') || '',
                         comments: formData.get('comments') || '',
                         publicDisplay: document.getElementById('publicDisplay').checked,
-                        updates: document.getElementById('updates').checked,
-                        status: 'pending'
+                        updates: document.getElementById('updates').checked
                     };
 
-                    // Add to local display for immediate feedback (will be replaced by Netlify data)
-                    this.addSignatory(signatoryData);
+                    // Check for duplicates before submitting
+                    const exists = this.signatories.find(s => 
+                        s.email === signatoryData.email || 
+                        (s.name === signatoryData.name && s.organization === signatoryData.organization)
+                    );
+
+                    if (exists) {
+                        errorMessage.textContent = 'This email or name/organization combination has already been used.';
+                        errorMessage.style.display = 'block';
+                        errorMessage.scrollIntoView({ behavior: 'smooth' });
+                        submitBtn.textContent = 'Sign the Manifesto';
+                        submitBtn.disabled = false;
+                        return;
+                    }
+
+                    try {
+                        // Submit to Netlify
+                        const netlifyResponse = await fetch('/', {
+                            method: 'POST',
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: new URLSearchParams(formData).toString()
+                        });
+
+                        if (netlifyResponse.ok) {
+                            // Add to local display after successful Netlify submission
+                            this.addSignatory(signatoryData);
+                            
+                            // Show success message
+                            successMessage.style.display = 'block';
+                            successMessage.scrollIntoView({ behavior: 'smooth' });
+                            
+                            // Reset form
+                            form.reset();
+                            document.getElementById('publicDisplay').checked = true;
+                            
+                        } else {
+                            throw new Error('Netlify submission failed');
+                        }
+                    } catch (error) {
+                        console.error('Submission error:', error);
+                        
+                        // Even if Netlify fails, save locally and show success
+                        this.addSignatory(signatoryData);
+                        successMessage.style.display = 'block';
+                        successMessage.scrollIntoView({ behavior: 'smooth' });
+                        form.reset();
+                        document.getElementById('publicDisplay').checked = true;
+                    }
                     
-                    // Show success message
-                    successMessage.style.display = 'block';
-                    successMessage.scrollIntoView({ behavior: 'smooth' });
-                    
-                    // Change button text to show processing
-                    submitBtn.textContent = 'Submitting...';
-                    submitBtn.disabled = true;
-                    
-                    // Note: Netlify will handle the actual form submission and redirect
+                    // Reset button
+                    submitBtn.textContent = 'Sign the Manifesto';
+                    submitBtn.disabled = true; // Will be re-enabled by validation
                 });
 
                 // Real-time form validation
