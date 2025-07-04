@@ -1,5 +1,12 @@
 <!DOCTYPE html>
 <form id="manifestoForm" netlify>
+<form id="manifestoForm" name="manifesto" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+    <!-- Adding this honeypot field right after opening form tag -->
+    <div style="display: none;">
+        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+    </div>
+    
+    <!-- Rest of your existing form fields stay the same -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -389,43 +396,62 @@
             }
         }
 
-        // Form submission
-        document.getElementById('manifestoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const signatory = {
-                name: formData.get('name'),
-                title: formData.get('title') || '',
-                organization: formData.get('organization'),
-                organizationType: formData.get('organizationType'),
-                email: formData.get('email'),
-                country: formData.get('country') || '',
-                website: formData.get('website') || '',
-                comments: formData.get('comments') || '',
-                publicDisplay: formData.get('publicDisplay') === 'on',
-                updates: formData.get('updates') === 'on',
-                timestamp: new Date().toISOString()
-            };
+    // Form submission
+    document.getElementById('manifestoForm').addEventListener('submit', function(e) {
+    // Netlify will handle the actual form submission
+    // We'll just update the local display for immediate feedback
+    
+    const formData = new FormData(e.target);
+    const signatory = {
+        name: formData.get('name'),
+        title: formData.get('title') || '',
+        organization: formData.get('organization'),
+        organizationType: formData.get('organizationType'),
+        email: formData.get('email'),
+        country: formData.get('country') || '',
+        website: formData.get('website') || '',
+        comments: formData.get('comments') || '',
+        publicDisplay: formData.get('publicDisplay') === 'on',
+        updates: formData.get('updates') === 'on',
+        timestamp: new Date().toISOString()
+    };
 
-            // Add to local storage
-            signatories.push(signatory);
-            count++;
-            updateDisplay();
+    // Add to local storage for immediate display
+    signatories.push(signatory);
+    count++;
+    saveData();
+    updateDisplay();
+    
 
-            // Show success message
-            document.getElementById('successMessage').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
-            
-            // Reset form
-            e.target.reset();
-            
-            // Scroll to success
-            document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
-        });
+    // Show success message immediately
+    document.getElementById('successMessage').style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+    
+    // Reset form
+    setTimeout(() => {
+        e.target.reset();
+        document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    });
+    
+    // Initialize
+    updateDisplay();
 
-        // Initialize
-        updateDisplay();
+    //Load data
+    function loadData() {
+    const saved = localStorage.getItem('manifestoSignatories');
+    if (saved) {
+        signatories = JSON.parse(saved);
+        count = signatories.length;
+        }
+    }
+    // Save data to localStorage
+    function saveData() {
+    localStorage.setItem('manifestoSignatories', JSON.stringify(signatories));
+        }
+
+    loadData();
+        
     </script>
 </body>
 </html>
