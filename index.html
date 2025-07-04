@@ -426,6 +426,14 @@
         document.querySelector('form[name="manifesto"]').addEventListener('submit', function(e) {
             // Add to local display for immediate feedback
             const formData = new FormData(e.target);
+            // More robust checkbox handling
+            const publicDisplayChecked = document.getElementById('publicDisplay').checked;
+            const updatesChecked = document.getElementById('updates').checked;
+
+            // Debug: Log checkbox values
+            console.log('publicDisplay checkbox checked:', publicDisplayChecked);
+            console.log('publicDisplay formData value:', formData.get('publicDisplay'));
+            console.log('updates checkbox checked:', updatesChecked);   
             const signatory = {
                 name: formData.get('name'),
                 title: formData.get('title') || '',
@@ -435,8 +443,8 @@
                 country: formData.get('country') || '',
                 website: formData.get('website') || '',
                 comments: formData.get('comments') || '',
-                publicDisplay: formData.get('publicDisplay') === 'yes',
-                updates: formData.get('updates') === 'yes',
+                publicDisplay: publicDisplayChecked,
+                updates: updatesChecked,
                 timestamp: new Date().toISOString()
             };
 
