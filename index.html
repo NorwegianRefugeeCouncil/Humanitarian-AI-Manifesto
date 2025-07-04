@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Humanitarian AI Manifesto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .manifesto {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .manifesto h2 {
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+
+        .manifesto h3 {
+            color: #333;
+            margin: 20px 0 10px 0;
+            border-left: 4px solid #ff6b35;
+            padding-left: 15px;
+        }
+
+        .manifesto p {
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus, 
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 4px;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            font-weight: normal;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .counter {
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .counter h3 {
+            color: #ff6b35;
+            margin-bottom: 10px;
+        }
+
+        .count-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .signatories {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .signatory {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .signatory-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .signatory-org {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>The Humanitarian AI Manifesto</h1>
+            <p>Join the movement to ensure AI serves those who need it most</p>
+        </div>
+
+        <div class="counter">
+            <h3>Current Signatories</h3>
+            <div class="count-number" id="count">0</div>
+        </div>
+
+        <div class="section manifesto">
+            <h2>Our Manifesto</h2>
+            
+            <p>In today's challenging funding landscape, humanitarian organizations face increasing pressure to do more with less. Resources are limited while needs continue to grow. Traditional approaches alone cannot scale to meet these challenges. We must become more efficient, data-driven, and collaborative in our approach, pooling resources and expertise across organizational boundaries to maximize our collective impact.</p>
+            
+            <p>The time has come to reevaluate digital transformation strategies that have been organization-centered rather than ecosystem-focused. To become fit for the future, we must prioritize and build for data interoperability, establish common exchange standards, and create shared resource platforms. Only by breaking down data silos and technical barriers between organizations can we fully realize AI's humanitarian potential.</p>
+            
+            <p>There is no doubt, we stand at a critical crossroads. Technology that has the potential to reshape the future of our sector must be utilized to its full potential but also first and foremost guided by our humanitarian principles. Today, we commit ourselves to these principles:</p>
+
+            <h3>We Will Do No Harm</h3>
+            <p>We will ensure our AI implementations cause no harm to affected communities. We recognize that technology is never neutral—it carries the values, biases, and intentions of its creators. We will design with awareness, test with rigor, and deploy with care, always prioritizing humanitarian principles. We will seek to give agency to children and other vulnerable persons to ensure that their rights are respected.</p>
+
+            <h3>We Will Act, Not Observe</h3>
+            <p>We will not stand passively behind technological progress. Where AI offers opportunities, we will move decisively to harness its benefits for those in greatest need. Where it threatens our humanitarian principles, equity, privacy, or human dignity, we will speak out and act.</p>
+
+            <h3>We Will Reach the Least Reached</h3>
+            <p>We will spare no effort to explore AI's potential to help us reach the most vulnerable and hard to reach. Where distance, conflict, or disaster have created barriers, AI could help us bridge them. We will direct our innovation towards improving access to affected communities and enhancing our understanding of humanitarian needs.</p>
+
+            <h3>We Will Build in the Open</h3>
+            <p>We commit to developing open-source AI applications and prioritizing open-source models over proprietary ones. We will strive to be independent and transparent about how and when we use AI. Progress comes through collaboration, not isolation. By sharing our methods, our code, and our learnings, we build trust and accelerate collective advancement toward humanitarian goals. We recognize that in a resource-constrained environment, open collaboration is not just an ideal but a necessity for any impact.</p>
+
+            <h3>We Will Learn Publicly</h3>
+            <p>We will share our successes and failures openly as we develop and deploy AI solutions. In humanitarian AI, both triumph and setback are valuable teachers. Through radical transparency about outcomes—what worked, what didn't, and why—we contribute to a collective wisdom that prevents repeated mistakes and accelerates proven approaches.</p>
+
+            <h3>We Will Build for Data Sharing</h3>
+            <p>We commit to developing interoperable systems with standardized data exchange formats that improve collaboration across organizational boundaries. Where possible, we will adopt a data mesh approach where humanitarian organizations maintain ownership and sovereignty over their data while participating in a federated ecosystem that has built-in data sharing and collaboration. We recognize that there is a need for a neutral organisation to serve as the custodian of this humanitarian data ecosystem, providing governance frameworks and technical infrastructure while supporting organizational autonomy.</p>
+
+            <h3>We Will Eliminate Duplication of Efforts</h3>
+            <p>We commit to coordinating our AI initiatives to avoid wasteful duplication of efforts in the humanitarian sector. Before launching new projects, we will assess existing solutions and actively seek collaboration opportunities. We will establish shared repositories of AI tools, models, and approaches specifically designed for humanitarian contexts.</p>
+
+            <h3>We Will Pool Resources</h3>
+            <p>We commit to collaborative funding models for humanitarian AI rather than competing for limited resources. We will advocate for and participate in funding consortiums, joint proposals, and shared investment in core AI infrastructure that benefits the entire humanitarian ecosystem. We will influence donors towards pooled funding mechanisms rather than funding siloed initiatives, so that we can develop more robust, sustainable solutions.</p>
+
+            <h3>We Will Strive to Maintain Alignment and Independence</h3>
+            <p>We commit to maintaining alignment with humanitarian principles while preserving our independence from commercial and political interests that could compromise our values. Our AI implementations will be guided by humanitarian principles of neutrality, impartiality, and independence, ensuring that our technological choices remain true to our core values rather than external pressures or market trends.</p>
+
+            <h3>We Will Practice Continuous and Participatory Evaluation</h3>
+            <p>We commit to ongoing evaluation of our AI. We will establish feedback mechanisms that also give voice to those our technology aims to serve, ensuring they can influence the development, deployment, and modification of AI solutions. This evaluation will be continuous, embedded in our systems rather than added as an afterthought, and will cater to gathering community perspectives alongside technical and ethical alignment metrics.</p>
+
+            <h3>We Will Partner with the Global Majority</h3>
+            <p>We will ensure that communities from the Global South and other historically marginalized regions are not just beneficiaries but co-creators of humanitarian AI solutions. We recognize that meaningful participation requires shifting power, resources, and decision-making authority. We commit to building genuine partnerships that value local expertise, contextual knowledge, and diverse perspectives as essential to developing effective and culturally appropriate AI applications.</p>
+
+            <h3>We Will Be Responsible Stewards</h3>
+            <p>We will use AI responsibly, adhering to the highest standards of data protection, ethical practice and regard for the planet. We recognize that the communities we serve have the right to privacy, dignity, and self-determination. Their data is not ours to exploit but to safeguard as we work toward their benefit. We commit to data-driven approaches that measure outcomes, increase efficiency, are transparent, and demonstrate impact, ensuring that every resource invested delivers maximum humanitarian return.</p>
+
+            <h3>We Will Influence the Influencers</h3>
+            <p>We will engage with decision-makers in the technology industry to prioritize use cases that serve our humanitarian mission. We will advocate tirelessly for AI development that centers human needs, especially those of marginalized communities. Through partnership, persuasion, and persistent advocacy, we will help redirect the trajectory of AI toward humanitarian ends, ensuring that those traditionally excluded from technological governance have representation where the future of AI is being shaped.</p>
+
+            <h3>Our Call</h3>
+            <p>This manifesto is not merely a statement of principles but a call to action. We invite humanitarian organizations, technologists, policymakers, and citizens to join us in this commitment. Together, we can ensure that AI becomes what it should be: humanity's most powerful technological tool for helping create a more just, equitable, and compassionate world.</p>
+
+            <p>The future of AI is not predetermined. It will be what we make it. Let us make it humanitarian.</p>
+
+            <p><strong>Join us. Sign the Humanitarian AI Manifesto and become part of a movement to ensure that the most powerful technology of our time serves those who need it most.</strong></p>
+        </div>
+
+        <div class="section">
+            <h2>Current Signatories</h2>
+            <div id="signatoryList" class="signatories">
+                <p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Sign the Manifesto</h2>
+            
+            <div id="successMessage" class="message success">
+                Thank you for signing the Humanitarian AI Manifesto!
+            </div>
+            
+            <div id="errorMessage" class="message error">
+                There was an error. Please try again.
+            </div>
+
+            <form id="manifestoForm">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="title">Title/Position</label>
+                    <input type="text" id="title" name="title" placeholder="e.g., AI Researcher, Program Director">
+                </div>
+
+                <div class="form-group">
+                    <label for="organization">Organization *</label>
+                    <input type="text" id="organization" name="organization" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="organizationType">Organization Type *</label>
+                    <select id="organizationType" name="organizationType" required>
+                        <option value="">Select organization type</option>
+                        <option value="NGO/Humanitarian">NGO/Humanitarian Organization</option>
+                        <option value="UN Agency">UN Agency</option>
+                        <option value="Tech Company">Technology Company</option>
+                        <option value="Academic Institution">Academic Institution</option>
+                        <option value="Government Agency">Government Agency</option>
+                        <option value="Independent Researcher">Independent Researcher</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <input type="text" id="country" name="country">
+                </div>
+
+                <div class="form-group">
+                    <label for="website">Website/LinkedIn (optional)</label>
+                    <input type="url" id="website" name="website" placeholder="https://">
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">Additional Comments (optional)</label>
+                    <textarea id="comments" name="comments" rows="3" placeholder="Share your thoughts on humanitarian AI..."></textarea>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="publicDisplay" name="publicDisplay" checked>
+                    <label for="publicDisplay">I agree to have my name and organization displayed publicly as a signatory</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="updates" name="updates">
+                    <label for="updates">I would like to receive updates about the Humanitarian AI Manifesto movement</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agree" name="agree" required>
+                    <label for="agree">I agree to the principles outlined in the Humanitarian AI Manifesto and commit to upholding them in my work *</label>
+                </div>
+
+                <button type="submit" class="btn">Sign the Manifesto</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let signatories = [];
+        let count = 0;
+
+        // Update counter and list
+        function updateDisplay() {
+            document.getElementById('count').textContent = count;
+            
+            const list = document.getElementById('signatoryList');
+            if (signatories.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>';
+            } else {
+                const publicSignatories = signatories.filter(s => s.publicDisplay);
+                if (publicSignatories.length === 0) {
+                    list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Signatories will appear here once they agree to public display.</p>';
+                } else {
+                    list.innerHTML = publicSignatories.reverse().map(s => `
+                        <div class="signatory">
+                            <div class="signatory-name">${s.name}</div>
+                            <div class="signatory-org">${s.organization}${s.title ? ', ' + s.title : ''}${s.country ? ' (' + s.country + ')' : ''}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // Form submission
+        document.getElementById('manifestoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const signatory = {
+                name: formData.get('name'),
+                title: formData.get('title') || '',
+                organization: formData.get('organization'),
+                organizationType: formData.get('organizationType'),
+                email: formData.get('email'),
+                country: formData.get('country') || '',
+                website: formData.get('website') || '',
+                comments: formData.get('comments') || '',
+                publicDisplay: formData.get('publicDisplay') === 'on',
+                updates: formData.get('updates') === 'on',
+                timestamp: new Date().toISOString()
+            };
+
+            // Add to local storage
+            signatories.push(signatory);
+            count++;
+            updateDisplay();
+
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Reset form
+            e.target.reset();
+            
+            // Scroll to success
+            document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
