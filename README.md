@@ -1,1 +1,1 @@
-# HumianitarianAIManifesto
+# Humianitarian AI Manifesto
