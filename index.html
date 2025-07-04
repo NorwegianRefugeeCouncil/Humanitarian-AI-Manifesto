@@ -1,12 +1,6 @@
 <!DOCTYPE html>
-
-<form id="manifestoForm" name="manifesto" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-    <!-- Adding this honeypot field right after opening form tag -->
-    <div style="display: none;">
-        <label>Don't fill this out if you're human: <input name="bot-field" /></label>
-    </div>
     
-    <!-- Rest of your existing form fields stay the same -->
+<!-- Rest of your existing form fields stay the same -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -300,7 +294,13 @@
                 There was an error. Please try again.
             </div>
 
-            <form id="manifestoForm">
+            
+            <form name="manifesto" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+                <!-- Netlify honeypot field -->
+                <div style="display: none;">
+                    <label>Don't fill this out if you're human: <input name="bot-field" /></label>
+                </div>
+                
                 <div class="form-group">
                     <label for="name">Full Name *</label>
                     <input type="text" id="name" name="name" required>
@@ -373,8 +373,27 @@
     <script>
         let signatories = [];
         let count = 0;
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('manifestoSignatories');
+            if (saved) {
+                try {
+                    signatories = JSON.parse(saved);
+                    count = signatories.length;
+                } catch (error) {
+                    console.error('Error loading saved data:', error);
+                    signatories = [];
+                    count = 0;
+                }
+            }
+        }
 
-        // Update counter and list
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('manifestoSignatories', JSON.stringify(signatories));
+        }
+
+        // Update counter and list display
         function updateDisplay() {
             document.getElementById('count').textContent = count;
             
@@ -386,72 +405,62 @@
                 if (publicSignatories.length === 0) {
                     list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Signatories will appear here once they agree to public display.</p>';
                 } else {
-                    list.innerHTML = publicSignatories.reverse().map(s => `
+                    list.innerHTML = publicSignatories.slice().reverse().map(s => `
                         <div class="signatory">
-                            <div class="signatory-name">${s.name}</div>
-                            <div class="signatory-org">${s.organization}${s.title ? ', ' + s.title : ''}${s.country ? ' (' + s.country + ')' : ''}</div>
+                            <div class="signatory-name">${escapeHtml(s.name)}</div>
+                            <div class="signatory-org">${escapeHtml(s.organization)}${s.title ? ', ' + escapeHtml(s.title) : ''}${s.country ? ' (' + escapeHtml(s.country) + ')' : ''}</div>
                         </div>
                     `).join('');
                 }
             }
         }
 
-    // Form submission
-    document.getElementById('manifestoForm').addEventListener('submit', function(e) {
-    // Netlify will handle the actual form submission
-    // We'll just update the local display for immediate feedback
-    
-    const formData = new FormData(e.target);
-    const signatory = {
-        name: formData.get('name'),
-        title: formData.get('title') || '',
-        organization: formData.get('organization'),
-        organizationType: formData.get('organizationType'),
-        email: formData.get('email'),
-        country: formData.get('country') || '',
-        website: formData.get('website') || '',
-        comments: formData.get('comments') || '',
-        publicDisplay: formData.get('publicDisplay') === 'on',
-        updates: formData.get('updates') === 'on',
-        timestamp: new Date().toISOString()
-    };
-
-    // Add to local storage for immediate display
-    signatories.push(signatory);
-    count++;
-    saveData();
-    updateDisplay();
-    
-
-    // Show success message immediately
-    document.getElementById('successMessage').style.display = 'block';
-    document.getElementById('errorMessage').style.display = 'none';
-    
-    // Reset form
-    setTimeout(() => {
-        e.target.reset();
-        document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-    });
-    
-    // Initialize
-    updateDisplay();
-
-    //Load data
-    function loadData() {
-    const saved = localStorage.getItem('manifestoSignatories');
-    if (saved) {
-        signatories = JSON.parse(saved);
-        count = signatories.length;
-        }
-    }
-    // Save data to localStorage
-    function saveData() {
-    localStorage.setItem('manifestoSignatories', JSON.stringify(signatories));
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
-    loadData();
-    updateDisplay(); 
+        // Handle form submission
+        document.querySelector('form[name="manifesto"]').addEventListener('submit', function(e) {
+            // Add to local display for immediate feedback
+            const formData = new FormData(e.target);
+            const signatory = {
+                name: formData.get('name'),
+                title: formData.get('title') || '',
+                organization: formData.get('organization'),
+                organizationType: formData.get('organizationType'),
+                email: formData.get('email'),
+                country: formData.get('country') || '',
+                website: formData.get('website') || '',
+                comments: formData.get('comments') || '',
+                publicDisplay: formData.get('publicDisplay') === 'yes',
+                updates: formData.get('updates') === 'yes',
+                timestamp: new Date().toISOString()
+            };
+
+            // Add to local storage for immediate display
+            signatories.push(signatory);
+            count++;
+            saveData();
+            updateDisplay();
+
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            // Scroll to success message
+            setTimeout(() => {
+                document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateDisplay();
+        });
     </script>
 </body>
 </html>
