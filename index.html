@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+console.log('Form data to be submitted:', signatoryData);
+                    console.log('Public display checked:', document.getElementById('publicDisplay').checked);<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -565,36 +566,48 @@
                     }
 
                     try {
+                        // Prepare form data for Netlify submission
+                        const netlifyFormData = new FormData();
+                        netlifyFormData.append('form-name', 'manifesto');
+                        
+                        // Add all form fields
+                        for (let [key, value] of formData.entries()) {
+                            netlifyFormData.append(key, value);
+                        }
+
                         // Submit to Netlify
                         const netlifyResponse = await fetch('/', {
                             method: 'POST',
-                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                            body: new URLSearchParams(formData).toString()
+                            body: netlifyFormData
                         });
 
-                        if (netlifyResponse.ok) {
-                            // Add to local display after successful Netlify submission
-                            const added = this.addSignatory(signatoryData);
-                            
-                            if (added) {
-                                // Show success message
-                                successMessage.style.display = 'block';
-                                successMessage.scrollIntoView({ behavior: 'smooth' });
-                                
-                                // Reset form
-                                form.reset();
-                                document.getElementById('publicDisplay').checked = true;
-                            }
-                        } else {
-                            throw new Error('Netlify submission failed');
-                        }
-                    } catch (error) {
-                        console.error('Submission error:', error);
-                        
-                        // Even if Netlify fails, save locally and show success
+                        console.log('Netlify response status:', netlifyResponse.status);
+
+                        // Add to local display regardless of Netlify response
+                        // (since you confirmed submissions are reaching Netlify)
                         const added = this.addSignatory(signatoryData);
                         
                         if (added) {
+                            // Show success message
+                            successMessage.style.display = 'block';
+                            successMessage.scrollIntoView({ behavior: 'smooth' });
+                            
+                            // Reset form
+                            form.reset();
+                            document.getElementById('publicDisplay').checked = true;
+                        } else {
+                            errorMessage.textContent = 'This signature already exists.';
+                            errorMessage.style.display = 'block';
+                        }
+
+                    } catch (error) {
+                        console.error('Submission error:', error);
+                        
+                        // Still save locally even if network fails
+                        const added = this.addSignatory(signatoryData);
+                        
+                        if (added) {
+                            successMessage.innerHTML = 'Thank you for signing! Your signature has been recorded locally. Network submission may have failed but your signature is saved.';
                             successMessage.style.display = 'block';
                             successMessage.scrollIntoView({ behavior: 'smooth' });
                             form.reset();
