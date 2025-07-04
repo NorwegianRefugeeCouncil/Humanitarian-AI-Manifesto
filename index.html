@@ -453,14 +453,19 @@
                 );
 
                 if (!exists) {
-                    this.signatories.push({
+                    const newSignatory = {
                         ...signatoryData,
                         timestamp: new Date().toISOString(),
                         verified: true
-                    });
+                    };
+                    
+                    this.signatories.push(newSignatory);
                     this.count++;
+                    
+                    console.log('Added signatory:', newSignatory.name, 'Total count:', this.count);
+                    
                     this.saveLocalData(); // Save locally as backup
-                    this.updateDisplay();
+                    this.updateDisplay(); // Update display immediately
                     return true;
                 }
                 return false;
@@ -468,22 +473,21 @@
 
             updateDisplay() {
                 // Update counter
+                console.log('Updating display with count:', this.count);
                 document.getElementById('count').textContent = this.count;
                 
                 // Update signatory list
                 const list = document.getElementById('signatoryList');
                 const publicSignatories = this.signatories.filter(s => s.publicDisplay !== false);
                 
+                console.log('Public signatories:', publicSignatories.length);
+                
                 if (publicSignatories.length === 0) {
                     list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>';
                 } else {
-                    // Sort by verified status first, then by name
+                    // Sort by timestamp, newest first
                     const sortedSignatories = publicSignatories
-                        .sort((a, b) => {
-                            if (a.verified && !b.verified) return -1;
-                            if (!a.verified && b.verified) return 1;
-                            return a.name.localeCompare(b.name);
-                        });
+                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     
                     list.innerHTML = sortedSignatories.map(s => `
                         <div class="signatory">
@@ -570,16 +574,17 @@
 
                         if (netlifyResponse.ok) {
                             // Add to local display after successful Netlify submission
-                            this.addSignatory(signatoryData);
+                            const added = this.addSignatory(signatoryData);
                             
-                            // Show success message
-                            successMessage.style.display = 'block';
-                            successMessage.scrollIntoView({ behavior: 'smooth' });
-                            
-                            // Reset form
-                            form.reset();
-                            document.getElementById('publicDisplay').checked = true;
-                            
+                            if (added) {
+                                // Show success message
+                                successMessage.style.display = 'block';
+                                successMessage.scrollIntoView({ behavior: 'smooth' });
+                                
+                                // Reset form
+                                form.reset();
+                                document.getElementById('publicDisplay').checked = true;
+                            }
                         } else {
                             throw new Error('Netlify submission failed');
                         }
@@ -587,11 +592,14 @@
                         console.error('Submission error:', error);
                         
                         // Even if Netlify fails, save locally and show success
-                        this.addSignatory(signatoryData);
-                        successMessage.style.display = 'block';
-                        successMessage.scrollIntoView({ behavior: 'smooth' });
-                        form.reset();
-                        document.getElementById('publicDisplay').checked = true;
+                        const added = this.addSignatory(signatoryData);
+                        
+                        if (added) {
+                            successMessage.style.display = 'block';
+                            successMessage.scrollIntoView({ behavior: 'smooth' });
+                            form.reset();
+                            document.getElementById('publicDisplay').checked = true;
+                        }
                     }
                     
                     // Reset button
