@@ -387,7 +387,34 @@
                 }
             }
         }
+// Add this function to manually seed the display with real signatories
+function addVerifiedSignatories() {
+    const verifiedSignatories = [
+        {
+            name: "John Smith",
+            organization: "UNICEF",
+            title: "AI Researcher",
+            country: "USA",
+            publicDisplay: true,
+            timestamp: "2024-01-15T10:30:00Z"
+        },
+        // Add more verified signatories from your Netlify dashboard
+    ];
+    
+    // Add to display if not already present
+    verifiedSignatories.forEach(sig => {
+        if (!signatories.find(s => s.email === sig.email)) {
+            signatories.push(sig);
+            count++;
+        }
+    });
+    
+    saveData();
+    updateDisplay();
+}
 
+// Call this when page loads
+addVerifiedSignatories();
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('manifestoSignatories', JSON.stringify(signatories));
