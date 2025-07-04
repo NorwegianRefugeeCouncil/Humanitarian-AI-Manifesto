@@ -8,7 +8,7 @@ This manifesto outlines key principles for humanitarian organizations working wi
 
 ## 🌐 Live Site
 
-Visit the live manifesto: [https://yourusername.github.io/your-repo-name](https://yourusername.github.io/your-repo-name)
+Visit the live manifesto: [https://peppy-pie-e0e105.netlify.app/](https://peppy-pie-e0e105.netlify.app/)
 
 ## 📋 Our Principles
 
