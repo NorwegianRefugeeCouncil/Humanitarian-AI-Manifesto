@@ -86,6 +86,7 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s ease;
         }
 
         .form-group input:focus, 
@@ -123,16 +124,18 @@
             font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .btn:hover:not(:disabled) {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .message {
@@ -196,14 +199,10 @@
             font-size: 0.9rem;
         }
 
-        .netlify-note {
-            background: #e7f3ff;
-            color: #0066cc;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: center;
+        .verified-badge {
+            color: #28a745;
+            font-size: 0.8em;
+            margin-left: 5px;
         }
 
         @media (max-width: 768px) {
@@ -212,6 +211,9 @@
             }
             .container {
                 padding: 10px;
+            }
+            .section {
+                padding: 20px;
             }
         }
     </style>
@@ -284,13 +286,11 @@
 
             <p><strong>Join us. Sign the Humanitarian AI Manifesto and become part of a movement to ensure that the most powerful technology of our time serves those who need it most.</strong></p>
         </div>
+
         <div class="section">
             <h2>Current Signatories</h2>
-            <div class="netlify-note">
-                <strong>Note:</strong> All signatures are verified and stored securely. The list below shows recent public signatories and updates automatically.
-            </div>
             <div id="signatoryList" class="signatories">
-                <p style="text-align: center; color: #666; font-style: italic;">Loading signatories...</p>
+                <p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>
             </div>
         </div>
 
@@ -298,19 +298,14 @@
             <h2>Sign the Manifesto</h2>
             
             <div id="successMessage" class="message success">
-                Thank you for signing the Humanitarian AI Manifesto! Your signature has been recorded and will be reviewed for public display.
+                Thank you for signing the Humanitarian AI Manifesto! Your signature has been recorded.
             </div>
             
             <div id="errorMessage" class="message error">
-                There was an error submitting your signature. Please check your connection and try again.
+                Please fill in all required fields and agree to the manifesto principles.
             </div>
 
-            <form name="manifesto" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="/success">
-                <!-- Netlify honeypot for spam protection -->
-                <div style="display: none;">
-                    <label>Don't fill this out if you're human: <input name="bot-field" /></label>
-                </div>
-
+            <form id="manifestoForm" novalidate>
                 <div class="form-group">
                     <label for="name">Full Name *</label>
                     <input type="text" id="name" name="name" required>
@@ -381,67 +376,19 @@
     </div>
 
     <script>
-        // Rock-solid signatory management system
         class SignatoryManager {
             constructor() {
                 this.signatories = [];
                 this.count = 0;
-                this.STORAGE_KEY = 'manifestoSignatories';
                 this.init();
             }
 
             init() {
-                this.loadVerifiedSignatories();
-                this.loadLocalData();
                 this.updateDisplay();
                 this.bindEvents();
             }
 
-            // Seed with real verified signatories to show the movement has momentum
-            loadVerifiedSignatories() {
-                const verifiedSignatories
 
-                // Only add if not already present
-                verifiedSignatories.forEach(sig => {
-                    if (!this.signatories.find(s => s.email === sig.email || 
-                        (s.name === sig.name && s.organization === sig.organization))) {
-                        this.signatories.push(sig);
-                    }
-                });
-
-                this.count = this.signatories.length;
-            }
-
-            loadLocalData() {
-                try {
-                    const saved = localStorage.getItem(this.STORAGE_KEY);
-                    if (saved) {
-                        const localSignatories = JSON.parse(saved);
-                        
-                        // Merge local with verified, avoiding duplicates
-                        localSignatories.forEach(sig => {
-                            if (!this.signatories.find(s => s.email === sig.email || 
-                                (s.name === sig.name && s.organization === sig.organization))) {
-                                this.signatories.push(sig);
-                            }
-                        });
-                        
-                        this.count = this.signatories.length;
-                    }
-                } catch (error) {
-                    console.error('Error loading local data:', error);
-                }
-            }
-
-            saveLocalData() {
-                try {
-                    // Only save non-verified signatories locally
-                    const localSignatories = this.signatories.filter(s => !s.verified);
-                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(localSignatories));
-                } catch (error) {
-                    console.error('Error saving local data:', error);
-                }
-            }
 
             addSignatory(signatoryData) {
                 // Check for duplicates
@@ -457,7 +404,6 @@
                         verified: false
                     });
                     this.count++;
-                    this.saveLocalData();
                     this.updateDisplay();
                     return true;
                 }
@@ -470,20 +416,24 @@
                 
                 // Update signatory list
                 const list = document.getElementById('signatoryList');
-                const publicSignatories = this.signatories.filter(s => s.publicDisplay);
+                const publicSignatories = this.signatories.filter(s => s.publicDisplay !== false);
                 
                 if (publicSignatories.length === 0) {
                     list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>';
                 } else {
-                    // Sort by timestamp, newest first
+                    // Sort by verified status first, then by name
                     const sortedSignatories = publicSignatories
-                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        .sort((a, b) => {
+                            if (a.verified && !b.verified) return -1;
+                            if (!a.verified && b.verified) return 1;
+                            return a.name.localeCompare(b.name);
+                        });
                     
                     list.innerHTML = sortedSignatories.map(s => `
                         <div class="signatory">
                             <div class="signatory-name">
                                 ${this.escapeHtml(s.name)}
-                                ${s.verified ? '<span style="color: #28a745; font-size: 0.8em;">✓</span>' : ''}
+                                ${s.verified ? '<span class="verified-badge">✓</span>' : ''}
                             </div>
                             <div class="signatory-org">
                                 ${this.escapeHtml(s.organization)}${s.title ? ', ' + this.escapeHtml(s.title) : ''}${s.country ? ' (' + this.escapeHtml(s.country) + ')' : ''}
@@ -501,13 +451,26 @@
             }
 
             bindEvents() {
-                const form = document.querySelector('form[name="manifesto"]');
+                const form = document.getElementById('manifestoForm');
                 const submitBtn = document.getElementById('submitBtn');
+                const successMessage = document.getElementById('successMessage');
+                const errorMessage = document.getElementById('errorMessage');
                 
                 form.addEventListener('submit', (e) => {
-                    // Let Netlify handle the actual submission
-                    // But also update local display for immediate feedback
+                    e.preventDefault();
                     
+                    // Hide previous messages
+                    successMessage.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                    
+                    // Validate form
+                    if (!this.validateForm()) {
+                        errorMessage.style.display = 'block';
+                        errorMessage.scrollIntoView({ behavior: 'smooth' });
+                        return;
+                    }
+                    
+                    // Get form data
                     const formData = new FormData(form);
                     const signatoryData = {
                         name: formData.get('name'),
@@ -522,61 +485,77 @@
                         updates: document.getElementById('updates').checked
                     };
 
-                    // Add to local display immediately
+                    // Add to display
                     const added = this.addSignatory(signatoryData);
                     
                     if (added) {
-                        // Show immediate success feedback
-                        setTimeout(() => {
-                            document.getElementById('successMessage').style.display = 'block';
-                            document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                    }
-
-                    // Change button text to show processing
-                    submitBtn.textContent = 'Submitting to Netlify...';
-                    submitBtn.disabled = true;
-                    
-                    // Re-enable button after a delay (Netlify will redirect anyway)
-                    setTimeout(() => {
+                        // Show success message
+                        successMessage.style.display = 'block';
+                        successMessage.scrollIntoView({ behavior: 'smooth' });
+                        
+                        // Reset form
+                        form.reset();
+                        document.getElementById('publicDisplay').checked = true;
+                        
+                        // Reset button
                         submitBtn.textContent = 'Sign the Manifesto';
-                        submitBtn.disabled = false;
-                    }, 3000);
+                        submitBtn.disabled = true;
+                    } else {
+                        errorMessage.textContent = 'This email or name/organization combination has already been used.';
+                        errorMessage.style.display = 'block';
+                        errorMessage.scrollIntoView({ behavior: 'smooth' });
+                    }
                 });
 
                 // Real-time form validation
-                const requiredFields = ['name', 'organization', 'organizationType', 'email', 'agree'];
+                const requiredFields = ['name', 'organization', 'organizationType', 'email'];
+                const agreeCheckbox = document.getElementById('agree');
+                
+                const checkValidation = () => {
+                    const isValid = this.validateForm();
+                    submitBtn.disabled = !isValid;
+                };
+                
                 requiredFields.forEach(fieldName => {
                     const field = document.getElementById(fieldName);
                     if (field) {
-                        field.addEventListener('input', this.validateForm.bind(this));
-                        field.addEventListener('change', this.validateForm.bind(this));
+                        field.addEventListener('input', checkValidation);
+                        field.addEventListener('change', checkValidation);
                     }
                 });
+                
+                agreeCheckbox.addEventListener('change', checkValidation);
+                
+                // Initial validation
+                checkValidation();
             }
 
             validateForm() {
-                const form = document.querySelector('form[name="manifesto"]');
-                const submitBtn = document.getElementById('submitBtn');
-                const isValid = form.checkValidity() && document.getElementById('agree').checked;
+                const name = document.getElementById('name').value.trim();
+                const organization = document.getElementById('organization').value.trim();
+                const organizationType = document.getElementById('organizationType').value;
+                const email = document.getElementById('email').value.trim();
+                const agree = document.getElementById('agree').checked;
                 
-                submitBtn.disabled = !isValid;
-                submitBtn.style.opacity = isValid ? '1' : '0.6';
+                // Basic validation
+                if (!name || !organization || !organizationType || !email || !agree) {
+                    return false;
+                }
+                
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    return false;
+                }
+                
+                return true;
             }
         }
 
-        // Initialize the signatory manager when page loads
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             window.signatoryManager = new SignatoryManager();
         });
-
-        // Handle success page redirect
-        if (window.location.pathname === '/success' || window.location.search.includes('success')) {
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('successMessage').style.display = 'block';
-                document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
-            });
-        }
     </script>
 </body>
 </html>
