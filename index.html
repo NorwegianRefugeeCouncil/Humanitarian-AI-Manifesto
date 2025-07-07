@@ -1,11 +1,11 @@
-console.log('Form data to be submitted:', signatoryData);
-                    console.log('Public display checked:', document.getElementById('publicDisplay').checked);<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Humanitarian AI Manifesto</title>
     <style>
+        /* --- CSS Styles --- */
         * {
             margin: 0;
             padding: 0;
@@ -310,7 +310,6 @@ console.log('Form data to be submitted:', signatoryData);
             </div>
 
             <form id="manifestoForm" name="manifesto" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" action="/success">
-                <!-- Netlify honeypot for spam protection -->
                 <div style="display: none;">
                     <label>Don't fill this out if you're human: <input name="bot-field" /></label>
                 </div>
@@ -384,6 +383,84 @@ console.log('Form data to be submitted:', signatoryData);
     </div>
 
     <script>
+        /* --- JavaScript Logic --- */
+
+        // NOTE: The Netlify Function code below MUST be in a separate file (e.g., netlify/functions/get-signatories.js)
+        // on your deployed Netlify site. It cannot run directly in the browser's HTML.
+        // It's included here as a comment for completeness of the overall solution.
+        /*
+        // netlify/functions/get-signatories.js
+        const fetch = require('node-fetch');
+
+        exports.handler = async (event, context) => {
+            const NETLIFY_ACCESS_TOKEN = process.env.NETLIFY_ACCESS_TOKEN;
+            const FORM_ID = process.env.NETLIFY_FORM_ID; 
+
+            if (!NETLIFY_ACCESS_TOKEN || !FORM_ID) {
+                return {
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Netlify access token or form ID not configured.' }),
+                };
+            }
+
+            try {
+                const response = await fetch(`https://api.netlify.com/api/v1/forms/${FORM_ID}/submissions?access_token=${NETLIFY_ACCESS_TOKEN}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    console.error('Netlify API error:', response.status, response.statusText);
+                    const errorBody = await response.text();
+                    console.error('Netlify API error response body:', errorBody);
+                    return {
+                        statusCode: response.status,
+                        body: JSON.stringify({ error: `Failed to fetch submissions from Netlify API: ${response.statusText}` }),
+                    };
+                }
+
+                const submissions = await response.json();
+
+                const publicSignatories = [];
+                let totalCount = 0;
+
+                submissions.forEach(submission => {
+                    const data = submission.data;
+                    totalCount++; 
+
+                    if (data.publicDisplay === 'yes' && !submission.spam) {
+                        publicSignatories.push({
+                            name: data.name,
+                            title: data.title || '',
+                            organization: data.organization,
+                            organizationType: data.organizationType,
+                            country: data.country || '',
+                            timestamp: submission.created_at, 
+                            verified: true 
+                        });
+                    }
+                });
+
+                return {
+                    statusCode: 200,
+                    body: JSON.stringify({
+                        count: totalCount, 
+                        signatories: publicSignatories, 
+                    }),
+                };
+
+            } catch (error) {
+                console.error('Error fetching Netlify submissions:', error);
+                return {
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Internal server error while fetching signatories.' }),
+                };
+            }
+        };
+        */
+
         class SignatoryManager {
             constructor() {
                 this.signatories = [];
@@ -392,103 +469,41 @@ console.log('Form data to be submitted:', signatoryData);
             }
 
             init() {
-                this.loadSignatoriesFromNetlify();
-                this.updateDisplay();
-                this.bindEvents();
+                this.loadSignatoriesFromNetlify(); 
+                this.bindEvents(); 
             }
 
             async loadSignatoriesFromNetlify() {
                 try {
-                    // Try to fetch approved signatories from Netlify Function
                     const response = await fetch('/.netlify/functions/get-signatories');
                     if (response.ok) {
                         const data = await response.json();
                         this.signatories = data.signatories || [];
-                        this.count = data.count || this.signatories.length;
+                        this.count = data.count || 0; 
                         this.updateDisplay();
                     } else {
-                        console.log('No Netlify function found, using local storage as fallback');
-                        this.loadLocalData();
+                        console.error('Failed to load signatories from Netlify function:', response.status, response.statusText);
+                        this.count = 0;
+                        this.signatories = [];
+                        this.updateDisplay(); 
                     }
                 } catch (error) {
-                    console.log('Netlify functions not available, using local storage as fallback');
-                    this.loadLocalData();
-                }
-            }
-
-            loadLocalData() {
-                try {
-                    const saved = localStorage.getItem('manifestoSignatories');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        this.signatories = data.signatories || [];
-                        this.count = data.count || this.signatories.length;
-                    }
-                } catch (error) {
-                    console.error('Error loading local data:', error);
-                    this.signatories = [];
+                    console.error('Error fetching signatories:', error);
                     this.count = 0;
+                    this.signatories = [];
+                    this.updateDisplay(); 
                 }
-            }
-
-            saveLocalData() {
-                try {
-                    const dataToSave = {
-                        signatories: this.signatories,
-                        count: this.count,
-                        lastUpdated: new Date().toISOString()
-                    };
-                    localStorage.setItem('manifestoSignatories', JSON.stringify(dataToSave));
-                } catch (error) {
-                    console.error('Error saving local data:', error);
-                }
-            }
-
-
-
-            addSignatory(signatoryData) {
-                // Check for duplicates
-                const exists = this.signatories.find(s => 
-                    s.email === signatoryData.email || 
-                    (s.name === signatoryData.name && s.organization === signatoryData.organization)
-                );
-
-                if (!exists) {
-                    const newSignatory = {
-                        ...signatoryData,
-                        timestamp: new Date().toISOString(),
-                        verified: true
-                    };
-                    
-                    this.signatories.push(newSignatory);
-                    this.count++;
-                    
-                    console.log('Added signatory:', newSignatory.name, 'Total count:', this.count);
-                    
-                    this.saveLocalData(); // Save locally as backup
-                    this.updateDisplay(); // Update display immediately
-                    return true;
-                }
-                return false;
             }
 
             updateDisplay() {
-                // Update counter
-                console.log('Updating display with count:', this.count);
                 document.getElementById('count').textContent = this.count;
                 
-                // Update signatory list
                 const list = document.getElementById('signatoryList');
-                const publicSignatories = this.signatories.filter(s => s.publicDisplay !== false);
                 
-                console.log('Public signatories:', publicSignatories.length);
-                
-                if (publicSignatories.length === 0) {
+                if (this.signatories.length === 0) {
                     list.innerHTML = '<p style="text-align: center; color: #666; font-style: italic;">Be the first to sign the manifesto!</p>';
                 } else {
-                    // Sort by timestamp, newest first
-                    const sortedSignatories = publicSignatories
-                        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    const sortedSignatories = [...this.signatories].sort((a, b) => a.name.localeCompare(b.name));
                     
                     list.innerHTML = sortedSignatories.map(s => `
                         <div class="signatory">
@@ -517,110 +532,22 @@ console.log('Form data to be submitted:', signatoryData);
                 const successMessage = document.getElementById('successMessage');
                 const errorMessage = document.getElementById('errorMessage');
                 
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault(); // Always prevent default to handle submission ourselves
-                    
-                    // Hide previous messages
+                form.addEventListener('submit', (e) => {
                     successMessage.style.display = 'none';
                     errorMessage.style.display = 'none';
                     
-                    // Validate form before submission
                     if (!this.validateForm()) {
+                        e.preventDefault(); 
                         errorMessage.style.display = 'block';
+                        errorMessage.textContent = 'Please fill in all required fields and agree to the manifesto principles.'; 
                         errorMessage.scrollIntoView({ behavior: 'smooth' });
                         return;
                     }
-                    
-                    // Change button text to show processing
-                    submitBtn.textContent = 'Submitting...';
+
                     submitBtn.disabled = true;
-                    
-                    // Get form data
-                    const formData = new FormData(form);
-                    const signatoryData = {
-                        name: formData.get('name'),
-                        title: formData.get('title') || '',
-                        organization: formData.get('organization'),
-                        organizationType: formData.get('organizationType'),
-                        email: formData.get('email'),
-                        country: formData.get('country') || '',
-                        website: formData.get('website') || '',
-                        comments: formData.get('comments') || '',
-                        publicDisplay: document.getElementById('publicDisplay').checked,
-                        updates: document.getElementById('updates').checked
-                    };
-
-                    // Check for duplicates before submitting
-                    const exists = this.signatories.find(s => 
-                        s.email === signatoryData.email || 
-                        (s.name === signatoryData.name && s.organization === signatoryData.organization)
-                    );
-
-                    if (exists) {
-                        errorMessage.textContent = 'This email or name/organization combination has already been used.';
-                        errorMessage.style.display = 'block';
-                        errorMessage.scrollIntoView({ behavior: 'smooth' });
-                        submitBtn.textContent = 'Sign the Manifesto';
-                        submitBtn.disabled = false;
-                        return;
-                    }
-
-                    try {
-                        // Prepare form data for Netlify submission
-                        const netlifyFormData = new FormData();
-                        netlifyFormData.append('form-name', 'manifesto');
-                        
-                        // Add all form fields
-                        for (let [key, value] of formData.entries()) {
-                            netlifyFormData.append(key, value);
-                        }
-
-                        // Submit to Netlify
-                        const netlifyResponse = await fetch('/', {
-                            method: 'POST',
-                            body: netlifyFormData
-                        });
-
-                        console.log('Netlify response status:', netlifyResponse.status);
-
-                        // Add to local display regardless of Netlify response
-                        // (since you confirmed submissions are reaching Netlify)
-                        const added = this.addSignatory(signatoryData);
-                        
-                        if (added) {
-                            // Show success message
-                            successMessage.style.display = 'block';
-                            successMessage.scrollIntoView({ behavior: 'smooth' });
-                            
-                            // Reset form
-                            form.reset();
-                            document.getElementById('publicDisplay').checked = true;
-                        } else {
-                            errorMessage.textContent = 'This signature already exists.';
-                            errorMessage.style.display = 'block';
-                        }
-
-                    } catch (error) {
-                        console.error('Submission error:', error);
-                        
-                        // Still save locally even if network fails
-                        const added = this.addSignatory(signatoryData);
-                        
-                        if (added) {
-                            successMessage.innerHTML = 'Thank you for signing! Your signature has been recorded locally. Network submission may have failed but your signature is saved.';
-                            successMessage.style.display = 'block';
-                            successMessage.scrollIntoView({ behavior: 'smooth' });
-                            form.reset();
-                            document.getElementById('publicDisplay').checked = true;
-                        }
-                    }
-                    
-                    // Reset button
-                    submitBtn.textContent = 'Sign the Manifesto';
-                    submitBtn.disabled = true; // Will be re-enabled by validation
+                    submitBtn.textContent = 'Submitting...';
                 });
 
-                // Real-time form validation
                 const requiredFields = ['name', 'organization', 'organizationType', 'email'];
                 const agreeCheckbox = document.getElementById('agree');
                 
@@ -639,7 +566,6 @@ console.log('Form data to be submitted:', signatoryData);
                 
                 agreeCheckbox.addEventListener('change', checkValidation);
                 
-                // Initial validation
                 checkValidation();
             }
 
@@ -650,12 +576,10 @@ console.log('Form data to be submitted:', signatoryData);
                 const email = document.getElementById('email').value.trim();
                 const agree = document.getElementById('agree').checked;
                 
-                // Basic validation
                 if (!name || !organization || !organizationType || !email || !agree) {
                     return false;
                 }
                 
-                // Email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(email)) {
                     return false;
@@ -665,7 +589,6 @@ console.log('Form data to be submitted:', signatoryData);
             }
         }
 
-        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             window.signatoryManager = new SignatoryManager();
         });
