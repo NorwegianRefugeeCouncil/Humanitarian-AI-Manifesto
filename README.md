@@ -8,7 +8,7 @@ This manifesto outlines key principles for humanitarian organizations working wi
 
 ## 🌐 Live Site
 
-Visit the live manifesto: 
+Visit the live manifesto: https://humanitarian-ai-manifesto.netlify.app/
 
 ## 📋 Our Principles
 
