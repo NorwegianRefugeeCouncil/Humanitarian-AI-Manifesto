@@ -8,7 +8,7 @@ This manifesto outlines key principles for humanitarian organizations working wi
 
 ## 🌐 Live Site
 
-Visit the live manifesto: [https://peppy-pie-e0e105.netlify.app/](https://peppy-pie-e0e105.netlify.app/)
+Visit the live manifesto: 
 
 ## 📋 Our Principles
 
@@ -35,8 +35,8 @@ Visit the live manifesto: [https://peppy-pie-e0e105.netlify.app/](https://peppy-
 ### Local Development
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/norwegianrefugeecouncil/humanitarian-ai-manifesto.git
+   cd humanitarian-ai-manifesto
    ```
 
 2. Open `index.html` in your browser or use a local server:
@@ -114,7 +114,6 @@ For questions about the manifesto or this project:
 
 - **Issues**: Use GitHub Issues for technical problems or suggestions
 - **Discussions**: Use GitHub Discussions for broader conversations
-- **Email**: [your-email@example.com]
 
 ## 🙏 Acknowledgments
 
