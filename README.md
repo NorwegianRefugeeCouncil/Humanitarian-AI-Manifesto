@@ -117,9 +117,9 @@ For questions about the manifesto or this project:
 
 ## 🙏 Acknowledgments
 
-- Developed with assistance from Anthropic's Claude AI
+- Developed with assistance from Anthropic's Claude AI and Google Gemini
 - Inspired by the humanitarian AI community
-- Built for organizations committed to ethical AI development
+- Built for organizations committed to Responsible AI development
 
 ## 📊 Current Status
 
