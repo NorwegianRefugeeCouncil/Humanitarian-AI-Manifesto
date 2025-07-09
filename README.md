@@ -130,15 +130,6 @@ For questions about the manifesto or this project:
 - 🔄 Collecting signatures from the community
 - 🔄 Gathering feedback for improvements
 
-## 🗺️ Roadmap
-
-- [ ] Add multi-language support
-- [ ] Implement backend signature storage
-- [ ] Add analytics dashboard
-- [ ] Create downloadable PDF version
-- [ ] Develop sharing tools for social media
-- [ ] Add signature verification system
-
 ---
 
 **Join the movement to ensure AI serves humanity's most vulnerable.**
